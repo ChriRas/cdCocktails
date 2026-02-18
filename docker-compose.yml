@@ -1,0 +1,23 @@
+services:
+  web:
+    image: php:8.4-apache
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./docker/000-default.conf:/etc/apache2/sites-available/000-default.conf:ro
+    command: bash -lc "a2enmod rewrite headers && apache2-foreground"
+
+  composer:
+    image: composer:2
+    working_dir: /app
+    volumes:
+      - ./:/app
+
+  imgproc:
+    image: dpokidov/imagemagick
+    working_dir: /work
+    volumes:
+      - ./cocktail-images:/data
+      - ./scripts:/work:ro
+    entrypoint: ["/work/process_images.sh"]

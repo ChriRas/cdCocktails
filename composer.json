@@ -1,0 +1,25 @@
+{
+  "name": "chriras/cd-cocktail",
+  "type": "project",
+  "description": "A simple cocktail menu",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Christoph Raschke",
+      "homepage": "https://github.com/chriras",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "require": {
+    "symfony/yaml": "^7.0",
+    "nesbot/carbon": "^3.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  }
+}

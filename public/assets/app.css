@@ -1,0 +1,145 @@
+:root { --bg:#000; --fg:#fff; }
+html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); }
+body { font-family:"Wix Madefor Text", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+h1,h2,h3 { font-family:"Wix Madefor Display","Wix Madefor Text",system-ui,sans-serif; }
+
+.page { min-height:100vh; }
+
+.title-block {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  padding: 18px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* zentriert */
+  gap: 12px;
+
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.title-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.title-text {
+  text-align: center;     /* Text mittig */
+  line-height: 1.1;
+}
+
+/* “Cocktailkarte” deutlich größer */
+.title-kicker {
+  font-family: "Wix Madefor Display", system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 1.35rem;   /* größer */
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 0 18px rgba(255,255,255,0.10);
+}
+
+/* Partyname etwas kleiner darunter */
+.title-text h1 {
+  font-family: "Wix Madefor Text", system-ui, sans-serif;
+  font-size: 1.0rem;
+  font-weight: 500;
+  opacity: .85;
+  margin: 6px 0 0 0;
+}
+
+.closed-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; }
+.closed-inner { text-align:center; padding:24px; }
+.closed-inner img { max-width:180px; height:auto; margin-bottom:16px; }
+.closed-inner h1 { font-size:1.4rem; margin:0; }
+
+/* Default: 1 Spalte */
+.edge-gallery {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0; /* oder z.B. 10px wenn du Abstand willst */
+  scroll-snap-type: y proximity;
+}
+
+.thumb-card {
+  display: block;
+  width: 100%;
+  background: #000;
+  border: 0;
+  border-radius: 0; /* optional: komplett edge-to-edge */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.thumb-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (orientation: landscape) {
+  .edge-gallery {
+    display: grid;
+    grid-auto-flow: column;           /* items in a row */
+    grid-auto-columns: minmax(420px, 70vw);  /* card width */
+    gap: 12px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 12px;
+    box-sizing: border-box;
+
+    scroll-snap-type: x proximity;    /* optional “premium” snap */
+  }
+
+  .thumb-card {
+    scroll-snap-align: start;
+    border-radius: 16px;              /* optional */
+  }
+
+  /* verhindert “vertikales Nachrutschen” */
+  body {
+    overflow-x: hidden;
+  }
+}
+html {
+  scroll-behavior: smooth;
+}
+/* PhotoSwipe UI reduzieren */
+
+/* Counter (1 / 23) */
+.pswp__counter {
+  display: none !important;
+}
+
+/* Zoom (Lupe) */
+.pswp__button--zoom {
+  display: none !important;
+}
+
+/* Fullscreen */
+.pswp__button--fs {
+  display: none !important;
+}
+
+/* Share */
+.pswp__button--share {
+  display: none !important;
+}
+
+/* Optional: Top-Bar dezenter */
+.pswp__top-bar {
+  background: rgba(0,0,0,0.4) !important;
+  backdrop-filter: blur(6px);
+}
