@@ -1,4 +1,13 @@
-:root { --bg:#000; --fg:#fff; }
+:root {
+  --bg:#000;
+  --fg:#fff;
+
+  /* Safe-area insets (iOS notch/Dynamic Island etc.) */
+  --safe-top: env(safe-area-inset-top);
+  --safe-right: env(safe-area-inset-right);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+}
 html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); }
 body { font-family:"Wix Madefor Text", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 h1,h2,h3 { font-family:"Wix Madefor Display","Wix Madefor Text",system-ui,sans-serif; }
@@ -10,7 +19,12 @@ h1,h2,h3 { font-family:"Wix Madefor Display","Wix Madefor Text",system-ui,sans-s
   top: 0;
   z-index: 10;
 
-  padding: 18px 14px;
+  /* Safe-area (Dynamic Island / Notch) */
+  padding-top: calc(18px + var(--safe-top));
+  padding-left: calc(14px + var(--safe-left));
+  padding-right: calc(14px + var(--safe-right));
+  padding-bottom: 18px;
+
   display: flex;
   align-items: center;
   justify-content: center; /* zentriert */
@@ -67,6 +81,8 @@ h1,h2,h3 { font-family:"Wix Madefor Display","Wix Madefor Text",system-ui,sans-s
   display: grid;
   grid-template-columns: 1fr;
   gap: 0; /* oder z.B. 10px wenn du Abstand willst */
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   scroll-snap-type: y proximity;
 }
 
@@ -98,6 +114,8 @@ h1,h2,h3 { font-family:"Wix Madefor Display","Wix Madefor Text",system-ui,sans-s
     -webkit-overflow-scrolling: touch;
 
     padding: 12px;
+    padding-left: calc(12px + var(--safe-left));
+    padding-right: calc(12px + var(--safe-right));
     box-sizing: border-box;
 
     scroll-snap-type: x proximity;    /* optional “premium” snap */
@@ -142,4 +160,202 @@ html {
 .pswp__top-bar {
   background: rgba(0,0,0,0.4) !important;
   backdrop-filter: blur(6px);
+
+  /* Respect safe-areas (Dynamic Island / notches) */
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+/* PhotoSwipe internes SVG im Close-Button ausblenden */
+.pswp__button--close .pswp__icn {
+  display: none !important;
+}
+/* PhotoSwipe: Close button like our install close button, and outside the safe-area */
+.pswp__button--close {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  background: rgba(0,0,0,0.2) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+
+  /* Remove default icon */
+  background-image: none !important;
+  position: relative;
+}
+
+.pswp__button--close::before {
+  content: "×";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.pswp__button--close:active {
+  transform: scale(0.99);
+  opacity: 0.92;
+}
+
+/* Install banner bottom */
+.install-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--safe-bottom));
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px;
+  border-radius: 16px;
+
+  background: rgba(10,10,10,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+}
+
+.install-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: transparent;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0;
+}
+
+.install-cta {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  border: 0;
+  background: #0A84FF;  /* iOS System Blue */
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.install-cta:active {
+  transform: scale(0.99);
+  opacity: .92;
+}
+
+/* Modal overlay */
+.install-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+}
+
+.install-modal {
+  width: min(520px, 100%);
+  background: #0b0b0b;
+  color: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  overflow: hidden;
+}
+
+.install-modal-header {
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 14px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.install-modal-title {
+  font-family: "Wix Madefor Display", system-ui, sans-serif;
+  font-size: 1.05rem;
+}
+
+.install-modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: transparent;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.install-modal-body {
+  padding: 14px 16px;
+  font-size: 1rem;
+  opacity: .95;
+}
+
+.install-modal-body ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.install-modal-body li {
+  margin: 8px 0;
+}
+
+.install-modal-footer {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  display:flex;
+  justify-content: flex-end;
+}
+
+.install-modal-ok {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 0;
+  background: #0A84FF; /* iOS System Blue */
+  color: #fff;
+  font-weight: 700;
+}
+
+.install-modal-ok:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.install-steps {
+  margin: 0;
+  padding-left: 20px;
+}
+.install-steps li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.install-ico-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+}
+.install-ico {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  opacity: .9;
 }

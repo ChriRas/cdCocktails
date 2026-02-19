@@ -9,6 +9,14 @@ use App\CocktailService;
 use App\TimeWindow;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonTimeZone;
+use Dotenv\Dotenv;
+
+// .env laden (nur wenn vorhanden)
+$dotenvPath = dirname(__DIR__);
+if (file_exists($dotenvPath . '/.env')) {
+    $dotenv = Dotenv::createImmutable($dotenvPath);
+    $dotenv->safeLoad();
+}
 
 header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet', true);
 

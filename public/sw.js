@@ -1,9 +1,10 @@
-const CACHE_NAME = 'cdcocktails-v1';
+const CACHE_NAME = 'cdcocktails-v3';
 
 const ASSETS = [
-    '/',
+    '/offline.html',
     '/assets/app.css',
     '/assets/gallery.js',
+    '/assets/pwa.js',
     '/vendor/photoswipe/photoswipe.css',
     '/vendor/photoswipe/photoswipe-lightbox.esm.min.js',
     '/vendor/photoswipe/photoswipe.esm.min.js',
@@ -31,14 +32,34 @@ self.addEventListener('fetch', (event) => {
     // Nur same-origin behandeln
     if (url.origin !== location.origin) return;
 
-    // Bilder lieber network-first (damit neue Uploads sofort da sind)
-    if (url.pathname.startsWith('/image.php')) {
-        event.respondWith(fetch(req).catch(() => caches.match(req)));
+    // Navigations (HTML-Seitenaufrufe): IMMER network-first, fallback offline
+    if (req.mode === 'navigate') {
+        event.respondWith((async () => {
+            try {
+                // erzwingt echten Netzwerk-Fetch (um SW/HTTP Cache zu umgehen)
+                return await fetch(req, { cache: 'no-store' });
+            } catch (e) {
+                return await caches.match('/offline.html');
+            }
+        })());
         return;
     }
 
-    // Assets: cache-first
+    // Bilder: network-first (damit neue Uploads sofort da sind), fallback cache, sonst offline
+    if (url.pathname.startsWith('/image.php')) {
+        event.respondWith(
+            fetch(req)
+                .then((res) => res)
+                .catch(async () => (await caches.match(req)) || (await caches.match('/offline.html')))
+        );
+        return;
+    }
+
+    // Assets: cache-first, fallback network, sonst offline
     event.respondWith(
-        caches.match(req).then(cached => cached || fetch(req))
+        caches.match(req).then((cached) => {
+            if (cached) return cached;
+            return fetch(req).catch(() => caches.match('/offline.html'));
+        })
     );
 });

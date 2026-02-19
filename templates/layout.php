@@ -1,4 +1,6 @@
-<?php /** @var \App\Helpers $helpers */ ?>
+<?php /** @var \App\Helpers $helpers */
+$DEV_MODE = ($_ENV['APP_ENV'] ?? '') === 'dev';
+?>
 <!doctype html>
 <html lang="de">
 <head>
@@ -34,6 +36,11 @@
 <body>
 <?= $content ?? '' ?>
 <?= $bodyExtra ?? '' ?>
+<script>
+    window.__DEV_MODE__ = <?= $DEV_MODE ? 'true' : 'false' ?>;
+</script>
+<script src="/assets/pwa.js" defer></script>
+
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
