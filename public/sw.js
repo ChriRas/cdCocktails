@@ -1,10 +1,11 @@
-const CACHE_NAME = 'cdcocktails-v3';
+const CACHE_NAME = 'cdcocktails-v4';
 
 const ASSETS = [
     '/offline.html',
     '/assets/app.css',
     '/assets/gallery.js',
     '/assets/pwa.js',
+    '/assets/logo.webp',
     '/vendor/photoswipe/photoswipe.css',
     '/vendor/photoswipe/photoswipe-lightbox.esm.min.js',
     '/vendor/photoswipe/photoswipe.esm.min.js',
