@@ -13,12 +13,14 @@ class TimeWindow {
 
   public function isOpen(CarbonImmutable $now): bool {
     if (!$this->enforced || !$this->startAt) {
-        return true;
+      return true;
     }
 
+    // Show 2 hours before start until 04:00 next day
     $showFrom  = $this->startAt->subHours(2);
     $showUntil = $this->startAt->addDay()->setTime(4, 0, 0);
 
-    return $now->betweenIncluded($showFrom, $showUntil);
+    // Compatibility-safe comparison (avoid depending on betweenIncluded())
+    return $now->greaterThanOrEqualTo($showFrom) && $now->lessThanOrEqualTo($showUntil);
   }
 }

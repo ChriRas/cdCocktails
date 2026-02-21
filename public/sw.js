@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cdcocktails-v4';
+const CACHE_NAME = 'cdcocktails-v5';
 
 const ASSETS = [
     '/offline.html',

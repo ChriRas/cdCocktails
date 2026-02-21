@@ -1,4 +1,4 @@
-<?php /** @var \App\Helpers $helpers */
+<?php
 $DEV_MODE = ($_ENV['APP_ENV'] ?? '') === 'dev';
 ?>
 <!doctype html>
@@ -16,7 +16,7 @@ $DEV_MODE = ($_ENV['APP_ENV'] ?? '') === 'dev';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow, noarchive">
-    <title><?= $helpers->h($title ?? 'Cocktailkarte') ?></title>
+    <title><?= $this->h($title ?? 'Cocktailkarte') ?></title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +27,7 @@ $DEV_MODE = ($_ENV['APP_ENV'] ?? '') === 'dev';
 
     <?php if (!empty($preload) && is_array($preload)): ?>
         <?php foreach ($preload as $u): ?>
-            <link rel="preload" as="image" href="<?= $helpers->h($u) ?>">
+            <link rel="preload" as="image" href="<?= $this->h($u) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
 

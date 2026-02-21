@@ -13,112 +13,86 @@ use Dotenv\Dotenv;
 
 // .env laden (nur wenn vorhanden)
 $dotenvPath = dirname(__DIR__);
-if (file_exists($dotenvPath . '/.env')) {
-    $dotenv = Dotenv::createImmutable($dotenvPath);
-    $dotenv->safeLoad();
+if (is_file($dotenvPath . '/.env')) {
+    Dotenv::createImmutable($dotenvPath)->safeLoad();
 }
 
 header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet', true);
 
+// Never cache HTML output (TimeWindow must react immediately)
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0', true);
+header('Pragma: no-cache', true);
+header('Expires: 0', true);
+header('Surrogate-Control: no-store', true);
+
 $helpers = new Helpers();
 $service = new CocktailService($helpers);
 
-try {
-  $info = $service->loadInfo();
+/**
+ * Main request handler.
+ */
+function handleRequest(Helpers $helpers, CocktailService $service): void
+{
+    $info = $service->loadInfo();
 
-  $tz = ($info['tz'] ?? null) instanceof CarbonTimeZone
-    ? $info['tz']
-    : new CarbonTimeZone(Config::DEFAULT_TZ);
+    $tz = ($info['tz'] ?? null) instanceof CarbonTimeZone
+        ? $info['tz']
+        : new CarbonTimeZone(Config::DEFAULT_TZ);
 
-  $now = CarbonImmutable::now($tz);
+    $now = CarbonImmutable::now($tz);
 
-  $window = new TimeWindow(
-    enforced: (($info['hasInfo'] ?? false) === true) && (($info['startAt'] ?? null) instanceof CarbonImmutable),
-    startAt: $info['startAt'] ?? null
-  );
+    // DEV debug: show the computed time window (enable with ?debug=1)
+    $appEnv = $_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? 'prod';
+    $isDev = ($appEnv === 'dev');
+    $debug = $isDev && (($_GET['debug'] ?? '') === '1');
 
-  if (!$window->isOpen($now)) {
-    $title = 'Bar geschlossen';
-    $preload = [];
-    $headExtra = '';
-    $bodyExtra = '';
-    ob_start();
-    include __DIR__ . '/../templates/closed.php';
-    $content = ob_get_clean();
-    include __DIR__ . '/../templates/layout.php';
-    exit;
-  }
+    $window = new TimeWindow(
+        enforced: (($info['hasInfo'] ?? false) === true) && (($info['startAt'] ?? null) instanceof CarbonImmutable),
+        startAt: $info['startAt'] ?? null
+    );
 
-  $basenames = $service->listProcessedBasenames();
-  if (count($basenames) === 0) {
-    $title = 'Bar geschlossen';
-    $preload = [];
-    $headExtra = '';
-    $bodyExtra = '';
-    ob_start();
-    include __DIR__ . '/../templates/closed.php';
-    $content = ob_get_clean();
-    include __DIR__ . '/../templates/layout.php';
-    exit;
-  }
+   $helpers->debugHelper($debug, $info, $appEnv, $tz, $now, $window);
+
+    if (!$window->isOpen($now)) {
+        $helpers->renderClosed();
+        return;
+    }
+
+    $baseNames = $service->listProcessedBaseNames();
+    if ($baseNames === []) {
+        $helpers->renderClosed();
+        return;
+    }
 
     $infoBlock = [];
     if (($info['hasInfo'] ?? false) === true && is_string($info['party_name'] ?? null)) {
-        $infoBlock = [
-            'party' => $info['party_name'],
-        ];
+        $infoBlock = ['party' => $info['party_name']];
     }
 
-  $items = [];
-  foreach ($basenames as $name) {
-    $fullPath = $service->resolveFull($name);
-    $thumbPath = $service->resolveThumb($name);
-    if (!$fullPath || !$thumbPath) continue;
+    $items = $service->buildGalleryItems();
+    if ($items === []) {
+        $helpers->renderClosed();
+        return;
+    }
 
-    $size = @getimagesize($fullPath);
-    if (!$size) { $w = 1440; $h = 960; }
-    else { $w = (int)$size[0]; $h = (int)$size[1]; }
+    $preload = [$items[0]['thumb']];
+    if (isset($items[1])) {
+        $preload[] = $items[1]['thumb'];
+    }
 
-    $items[] = [
-      'thumb' => '/image.php?t=thumb&f=' . rawurlencode($name),
-      'full'  => '/image.php?t=full&f=' . rawurlencode($name),
-      'w' => $w,
-      'h' => $h,
-      'alt' => $name,
-    ];
-  }
+    $headExtra = '<link rel="stylesheet" href="/vendor/photoswipe/photoswipe.css">';
+    $bodyExtra = '<script type="module" src="/assets/gallery.js"></script>';
 
-  if (count($items) === 0) {
-    $title = 'Bar geschlossen';
-    $preload = [];
-    $headExtra = '';
-    $bodyExtra = '';
+    $title = 'Cocktailkarte';
     ob_start();
-    include __DIR__ . '/../templates/closed.php';
-    $content = ob_get_clean();
-    include __DIR__ . '/../templates/layout.php';
-    exit;
-  }
+    include __DIR__ . '/../templates/gallery.php';
+    $content = (string)ob_get_clean();
 
-  $preload = [$items[0]['thumb']];
-  if (isset($items[1])) $preload[] = $items[1]['thumb'];
+    $helpers->renderLayout($title, $content, $preload, $headExtra, $bodyExtra);
+}
 
-  $headExtra = '<link rel="stylesheet" href="/vendor/photoswipe/photoswipe.css">';
-  $bodyExtra = '<script type="module" src="/assets/gallery.js"></script>';
-
-  $title = 'Cocktailkarte';
-  ob_start();
-  include __DIR__ . '/../templates/gallery.php';
-  $content = ob_get_clean();
-  include __DIR__ . '/../templates/layout.php';
-
-} catch (Throwable) {
-  $title = 'Bar geschlossen';
-  $preload = [];
-  $headExtra = '';
-  $bodyExtra = '';
-  ob_start();
-  include __DIR__ . '/../templates/closed.php';
-  $content = ob_get_clean();
-  include __DIR__ . '/../templates/layout.php';
+try {
+    handleRequest($helpers, $service);
+} catch (Throwable $e) {
+    $helpers->renderClosed();
 }
