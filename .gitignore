@@ -5,3 +5,5 @@
 /cocktail-images/thumbs
 /cocktail-images/incoming
 .env
+/var
+.phpunit.cache

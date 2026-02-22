@@ -1,62 +1,99 @@
-# cdCocktails – Scroll-Galerie + Bild-Processing
+# cdCocktails - Scroll Gallery + Image Processing
 
+## Overview
+Mobile-first cocktail menu with:
+- dark visual style with light text
+- a single-column scrolling gallery of preview images
+- fullscreen lightbox view with swipe navigation
+- folder-driven content from `cocktail-images/`
+- WebP-only output for full images and thumbnails
 
-## Überblick
-Mobile-first Cocktailkarte:
-- schwarze Optik mit weißer Schrift
-- Vorschaubilder als **1-spaltige** Scroll-Liste
-- Klick auf ein Bild öffnet Vollansicht (Lightbox), dort kann man **links/rechts swipen**
-- Inhalte sind **folder-driven** über `cocktail-images/`
-- Ausgabe ist **nur WebP** (Full + Thumbnails)
+## Production Folder Structure
+Everything is stored under `cocktail-images/`:
+- `incoming/`: upload target (original images and optional `info.yml`)
+- `full/`: generated WebP files for fullscreen view (max 1440px)
+- `thumbs/`: generated WebP thumbnails for gallery view
+- `data/info.yml`: event metadata copied from `incoming/info.yml`
 
-
-## Ordnerstruktur (Produktion)
-Alles liegt unter `cocktail-images/`:
-- `incoming/`  → Upload-Ziel (Originale, optional `info.yml`)
-- `full/`      → generierte WebP-Bilder für Vollansicht (max. 1440px)
-- `thumbs/`    → generierte WebP-Thumbnails (1-spaltig, portrait)
-- `data/info.yml` → Event-Infos (aus `incoming/info.yml` kopiert)
-
-## WebP & Dateinamen
-Beim Processing werden alle Uploads nach **WebP** konvertiert.
-Dabei werden Dateinamen automatisch normalisiert:
+## WebP and Filenames
+During processing, uploaded images are converted to WebP.
+Filenames are normalized:
 - lowercase
-- Leerzeichen/Unterstriche → `-`
-- Sonderzeichen entfernt
-- Kollisionen werden mit `-1`, `-2`, … gelöst
+- spaces and underscores to `-`
+- remove special characters
+- resolve collisions using `-1`, `-2`, ...
 
-## Upload-Batches / Reset-Regel
-Wenn **neue Uploads** in `cocktail-images/incoming/` liegen **und**
-bereits erzeugte Dateien in `full/` oder `thumbs/` **älter als 5 Minuten** sind,
-wird ein **neuer Upload-Batch** angenommen. Dann wird vor dem Processing:
-- `full/*` gelöscht
-- `thumbs/*` gelöscht
-- `data/info.yml` gelöscht
+## Upload Batch Reset Rule
+If there are new uploads in `cocktail-images/incoming/` and processed files in `full/` or `thumbs/` are older than 5 minutes, the run is treated as a new batch. Before processing, it clears:
+- `full/*`
+- `thumbs/*`
+- `data/info.yml`
 
-Damit ist sichergestellt, dass ein kompletter neuer Satz Cocktails sauber ersetzt wird.
+This guarantees a clean replacement for a complete new cocktail set.
 
----
+Image processing uses the PHP `imagick` extension (no `magick` CLI required).
+The image root path is configured through `IMAGES_ROOT` in `.env`.
 
-## Für Entwickler (Docker)
-Docker wird für Entwicklung/Testing genutzt. Produktion kann auch ohne Docker laufen.
+## Development (Docker)
 
-### Dependencies installieren
+### Rebuild and Restart Environment
 ```bash
-docker compose run --rm composer install
+docker compose down
+docker compose up -d --build
 ```
 
-### App starten
+### Install Dependencies
 ```bash
-docker compose up -d
+docker compose run --rm -e COMPOSER_IGNORE_PLATFORM_REQ=ext-imagick composer composer install
 ```
-Dann: http://localhost:8080
 
-### Bild-Processing (manuell)
+### Start Application
+```bash
+docker compose up -d --build
+```
+Then open: http://localhost:8081
+
+### Check imagick Module in Container
+```bash
+docker compose run --rm imgproc php -m | grep -i imagick
+```
+
+### Run Image Processing in Docker
 ```bash
 docker compose run --rm imgproc
 ```
 
-### Cron (Host), z.B. alle 2 Minuten
+### Run Image Processing Locally
+```bash
+php bin/console app:images:process
+```
+
+### Cron Example (Host)
 ```cron
-*/2 * * * * cd /pfad/zum/projekt && docker compose run --rm imgproc >/dev/null 2>&1
+*/2 * * * * cd /path/to/project && php bin/console app:images:process >/dev/null 2>&1
+```
+
+## Task Commands
+This project ships with a `Taskfile.yml` for common workflows.
+
+| Command | Description |
+| --- | --- |
+| `task start` | Start Docker containers |
+| `task stop` | Stop and remove Docker containers |
+| `task build` | Build Docker images |
+| `task test` | Run PHPUnit tests in Docker |
+| `task phpstan` | Run PHPStan static analysis in Docker |
+| `task image-process` | Run image processing command in Docker |
+| `task composer -- <args>` | Run Composer in Docker, e.g. `task composer -- install` |
+
+## Quality Checks
+
+### Unit Tests
+```bash
+docker compose run --rm imgproc vendor/bin/phpunit --testdox
+```
+
+### Static Analysis (PHPStan)
+```bash
+docker compose run --rm imgproc vendor/bin/phpstan analyse --memory-limit=512M
 ```

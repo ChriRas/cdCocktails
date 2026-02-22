@@ -1,0 +1,47 @@
+version: '3'
+
+dotenv:
+  - .env
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  start:
+    desc: Start containers in detached mode
+    cmds:
+      - docker compose up -d
+
+  stop:
+    desc: Stop and remove containers
+    cmds:
+      - docker compose down
+
+  build:
+    desc: Build Docker images
+    cmds:
+      - docker compose build
+
+  test:
+    desc: Run PHPUnit in Docker
+    cmds:
+      - docker compose run --rm imgproc vendor/bin/phpunit --testdox
+
+  phpstan:
+    desc: Run PHPStan in Docker
+    cmds:
+      - docker compose run --rm imgproc vendor/bin/phpstan analyse --memory-limit=512M
+
+  image-process:
+    desc: Run image processing command in Docker
+    cmds:
+      - docker compose run --rm imgproc
+
+  composer:
+    desc: "Run Composer in Docker (usage: task composer -- install)"
+    vars:
+      COMPOSER_ARGS: '{{default "install" .CLI_ARGS}}'
+    cmds:
+      - docker compose run --rm -e COMPOSER_IGNORE_PLATFORM_REQ=ext-imagick composer composer {{.COMPOSER_ARGS}}
