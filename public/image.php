@@ -3,13 +3,15 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use App\Config;
 use App\Helpers;
 use App\CocktailService;
 
 header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet', true);
 
 $helpers = new Helpers();
-$service = new CocktailService($helpers);
+$config = new Config();
+$service = new CocktailService($helpers, $config);
 
 $type = $_GET['t'] ?? 'full';
 $f = $_GET['f'] ?? '';

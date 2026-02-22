@@ -11,13 +11,16 @@ use Throwable;
 
 class CocktailService
 {
-    public function __construct(private Helpers $helpers)
+    public function __construct(private Helpers $helpers, private Config $config)
     {
     }
 
+    /**
+     * @return array{hasInfo:false}|array{hasInfo:true, party_name:?string, startAt:?CarbonImmutable, tz:CarbonTimeZone}
+     */
     public function loadInfo(): array
     {
-        $path = Config::INFO_FILE;
+        $path = $this->config->infoFile();
         if (!is_file($path)) return ['hasInfo' => false];
 
         try {
@@ -47,8 +50,9 @@ class CocktailService
     /** @return string[] basenames (sorted) present in FULL_DIR */
     public function listProcessedBaseNames(): array
     {
-        $this->assertReadableDir(Config::FULL_DIR);
-        $files = $this->safeScanDir(Config::FULL_DIR);
+        $fullDir = $this->config->fullDir();
+        $this->assertReadableDir($fullDir);
+        $files = $this->safeScanDir($fullDir);
 
         $names = [];
         foreach ($files as $f) {
@@ -58,7 +62,7 @@ class CocktailService
             if (!$this->helpers->isImageFilename($f)) {
                 continue;
             }
-            $abs = Config::FULL_DIR . DIRECTORY_SEPARATOR . $f;
+            $abs = $fullDir . DIRECTORY_SEPARATOR . $f;
             if (is_file($abs)) {
                 $names[] = $f;
             }
@@ -74,7 +78,7 @@ class CocktailService
         if (!$this->helpers->isImageFilename($basename)) {
             return null;
         }
-        $abs = Config::FULL_DIR . DIRECTORY_SEPARATOR . $basename;
+        $abs = $this->config->fullDir() . DIRECTORY_SEPARATOR . $basename;
         return is_file($abs) ? $abs : null;
     }
 
@@ -84,10 +88,13 @@ class CocktailService
         if (!$this->helpers->isImageFilename($basename)) {
             return null;
         }
-        $abs = Config::THUMBS_DIR . DIRECTORY_SEPARATOR . $basename;
+        $abs = $this->config->thumbsDir() . DIRECTORY_SEPARATOR . $basename;
         return is_file($abs) ? $abs : null;
     }
 
+    /**
+     * @return array{0:int, 1:int}
+     */
     public function getImageDimensions(string $fullPath, int $defaultW = 1440, int $defaultH = 960): array
     {
         $w = $defaultW;
@@ -98,7 +105,7 @@ class CocktailService
         }
 
         $size = getimagesize($fullPath);
-        if (is_array($size) && isset($size[0], $size[1])) {
+        if (is_array($size)) {
             $w = (int)$size[0];
             $h = (int)$size[1];
         }

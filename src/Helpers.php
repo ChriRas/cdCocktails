@@ -42,6 +42,7 @@ class Helpers {
         $preload = [];
         $headExtra = '';
         $bodyExtra = '';
+        $helpers = $this;
 
         ob_start();
         include __DIR__ . '/../templates/closed.php';
@@ -51,7 +52,7 @@ class Helpers {
     }
     /**
      * @param bool $debug
-     * @param array $info
+     * @param array{hasInfo?:bool, startAt?:CarbonImmutable|null} $info
      * @param mixed $appEnv
      * @param mixed $tz
      * @param CarbonImmutable $now

@@ -26,12 +26,13 @@ header('Expires: 0', true);
 header('Surrogate-Control: no-store', true);
 
 $helpers = new Helpers();
-$service = new CocktailService($helpers);
+$config = new Config();
+$service = new CocktailService($helpers, $config);
 
 /**
  * Main request handler.
  */
-function handleRequest(Helpers $helpers, CocktailService $service): void
+function handleRequest(Helpers $helpers, CocktailService $service, Config $config): void
 {
     $info = $service->loadInfo();
 
@@ -92,7 +93,7 @@ function handleRequest(Helpers $helpers, CocktailService $service): void
 }
 
 try {
-    handleRequest($helpers, $service);
+    handleRequest($helpers, $service, $config);
 } catch (Throwable $e) {
     $helpers->renderClosed();
 }
