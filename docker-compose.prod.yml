@@ -1,10 +1,13 @@
 services:
   web:
-    image: php:8.4-apache
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
     container_name: cdcocktails_web
     restart: unless-stopped
     environment:
       - APP_ENV=prod
+      - IMAGES_ROOT=${IMAGES_ROOT:-/var/www/html/cocktail-images}
     ports:
       - "80:80"
     volumes:
@@ -14,14 +17,19 @@ services:
       - ./vendor:/var/www/html/vendor:ro
       - ./cocktail-images:/var/www/html/cocktail-images
       - ./docker/000-default.conf:/etc/apache2/sites-available/000-default.conf:ro
-    command: bash -lc "a2enmod rewrite headers && apache2-foreground"
 
   imgproc:
-    image: dpokidov/imagemagick
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
     container_name: cdcocktails_imgproc
-    working_dir: /work
+    working_dir: /var/www/html
+    environment:
+      - IMAGES_ROOT=${IMAGES_ROOT:-/var/www/html/cocktail-images}
     volumes:
-      - ./cocktail-images:/data
-      - ./scripts:/work:ro
-    entrypoint: ["/work/process_images.sh"]
+      - ./bin:/var/www/html/bin:ro
+      - ./src:/var/www/html/src:ro
+      - ./vendor:/var/www/html/vendor:ro
+      - ./cocktail-images:/var/www/html/cocktail-images
+    command: ["php", "bin/console", "app:images:process"]
     profiles: ["tools"]

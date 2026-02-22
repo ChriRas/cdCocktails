@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+use App\Command\ProcessImagesCommand;
+use App\Config;
+use Dotenv\Dotenv;
+use Symfony\Component\Console\Application;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$dotenvPath = dirname(__DIR__);
+if (is_file($dotenvPath . '/.env')) {
+    Dotenv::createImmutable($dotenvPath)->safeLoad();
+}
+
+$application = new Application('cdCocktails CLI');
+$config = new Config();
+$application->add(new ProcessImagesCommand($config));
+
+exit($application->run());

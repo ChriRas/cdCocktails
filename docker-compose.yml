@@ -1,12 +1,15 @@
 services:
   web:
-    image: php:8.4-apache
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    environment:
+      - IMAGES_ROOT=${IMAGES_ROOT:-/var/www/html/cocktail-images}
     ports:
       - "8081:80"
     volumes:
       - ./:/var/www/html:delegated
       - ./docker/000-default.conf:/etc/apache2/sites-available/000-default.conf:ro
-    command: bash -lc "a2enmod rewrite headers && apache2-foreground"
 
   composer:
     image: composer:2
@@ -15,9 +18,12 @@ services:
       - ./:/app
 
   imgproc:
-    image: dpokidov/imagemagick
-    working_dir: /work
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    environment:
+      - IMAGES_ROOT=${IMAGES_ROOT:-/var/www/html/cocktail-images}
     volumes:
-      - ./cocktail-images:/data
-      - ./scripts:/work:ro
-    entrypoint: ["/work/process_images.sh"]
+      - ./:/var/www/html:delegated
+    command: ["php", "bin/console", "app:images:process"]
