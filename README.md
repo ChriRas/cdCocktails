@@ -1,4 +1,4 @@
-# cdCocktails - Scroll Gallery + Image Processing
+# cdCocktails - a simple cocktail menu
 
 ## Overview
 Mobile-first cocktail menu with:
